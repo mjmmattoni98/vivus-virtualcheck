@@ -9,6 +9,18 @@ globs: **/*.svelte,**/*.svelte.ts,*.svelte,*.svelte.ts,*.remote.ts,**/*.remote.t
 alwaysApply: false
 ---
 
+**Using images with SvelteJS**
+
+Use the following example when managing images:
+
+```js
+  <script>
+    import MyImage from './path/to/your/image.jpg?enhanced';
+  </script>
+
+  <enhanced:img src={MyImage} alt="some alt text" />
+```
+
 **Import Requirements**
 
 Understanding what needs an `import` statement is crucial.
