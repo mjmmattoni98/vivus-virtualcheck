@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import * as m from '$lib/paraglide/messages';
 	import vivusLogo from '$lib/assets/vivus_brand_h.svg';
+	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Field from '$lib/components/ui/field';
 	import { Input } from '$lib/components/ui/input';
-	import { Button } from '$lib/components/ui/button';
-	import { CheckCircle, AlertCircle } from '@lucide/svelte';
+	import { m } from '$lib/paraglide/messages';
+	import { AlertCircle, CheckCircle } from '@lucide/svelte';
 
 	let { data, form } = $props();
 

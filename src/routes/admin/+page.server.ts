@@ -1,10 +1,13 @@
-import { createPocketBase } from '$lib/server/pocketbase';
+import { redirect } from '@sveltejs/kit';
 import type { ContactExpanded } from '$lib/types';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url }) => {
-	const pb = createPocketBase();
-	const page = parseInt(url.searchParams.get('page') || '1');
+export const load: PageServerLoad = async ({ url, locals }) => {
+	if (!locals.pb.authStore.isValid) {
+		redirect(303, '/admin/login');
+	}
+	const pb = locals.pb;
+	const page = Number.parseInt(url.searchParams.get('page') || '1');
 	const perPage = 20;
 	const search = url.searchParams.get('search') || '';
 
@@ -29,8 +32,8 @@ export const load: PageServerLoad = async ({ url }) => {
 };
 
 export const actions: Actions = {
-	updateStatus: async ({ request }) => {
-		const pb = createPocketBase();
+	updateStatus: async ({ request, locals }) => {
+		const pb = locals.pb;
 		const formData = await request.formData();
 
 		const contactId = formData.get('contactId') as string;
