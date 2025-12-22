@@ -5,7 +5,7 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ cookies }) => {
 	const authToken = cookies.get('pb_auth');
 	if (authToken) {
-		redirect(303, '/es/admin');
+		redirect(303, '/admin');
 	}
 	return {};
 };
@@ -45,6 +45,6 @@ export const actions: Actions = {
 			return fail(400, { error: true, email });
 		}
 
-		redirect(303, '/es/admin');
+		redirect(303, '/admin');
 	}
 };

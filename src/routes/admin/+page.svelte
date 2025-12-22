@@ -2,7 +2,8 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import * as m from '$lib/paraglide/messages';
+	import { m } from '$lib/paraglide/messages';
+	import { setLocale } from '$lib/paraglide/runtime';
 	import * as Card from '$lib/components/ui/card';
 	import * as Table from '$lib/components/ui/table';
 	import { Input } from '$lib/components/ui/input';
@@ -16,6 +17,10 @@
 
 	let searchInput = $state(data.search || '');
 	let debounceTimer: ReturnType<typeof setTimeout>;
+
+	$effect(() => {
+		searchInput = data.search || '';
+	});
 
 	const handleSearch = (value: string) => {
 		clearTimeout(debounceTimer);

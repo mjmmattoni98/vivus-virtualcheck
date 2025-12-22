@@ -1,6 +1,6 @@
 <script lang="ts">
 	import vivusLogo from '$lib/assets/vivus_brand_h.svg';
-	import * as m from '$lib/paraglide/messages';
+	import { m } from '$lib/paraglide/messages';
 	import { Button } from '$lib/components/ui/button';
 	import { LogOut, Users } from '@lucide/svelte';
 
@@ -18,13 +18,13 @@
 			<div class="flex items-center gap-4">
 				<img src={vivusLogo} alt="Vivus" class="h-8" />
 				<nav class="ml-8 flex items-center gap-2">
-					<Button variant="ghost" href="/es/admin" class="gap-2">
+					<Button variant="ghost" href="/admin" class="gap-2">
 						<Users class="size-4" />
 						{m.admin_contacts()}
 					</Button>
 				</nav>
 			</div>
-			<form method="POST" action="/es/admin/logout">
+			<form method="POST" action="/admin/logout">
 				<Button variant="outline" type="submit" class="gap-2">
 					<LogOut class="size-4" />
 					{m.admin_logout()}

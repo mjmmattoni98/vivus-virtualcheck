@@ -10,7 +10,7 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	}
 
 	if (!authToken) {
-		redirect(303, '/es/admin/login');
+		redirect(303, '/admin/login');
 	}
 
 	return {};

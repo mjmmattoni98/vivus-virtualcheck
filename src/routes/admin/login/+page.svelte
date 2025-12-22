@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import * as m from '$lib/paraglide/messages';
+	import { m } from '$lib/paraglide/messages';
 	import vivusLogo from '$lib/assets/vivus_brand_h.svg';
 	import * as Card from '$lib/components/ui/card';
 	import * as Field from '$lib/components/ui/field';
