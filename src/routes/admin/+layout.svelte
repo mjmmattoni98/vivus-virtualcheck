@@ -2,7 +2,7 @@
 	import vivusLogo from '$lib/assets/vivus_brand_h.svg';
 	import { m } from '$lib/paraglide/messages';
 	import { Button } from '$lib/components/ui/button';
-	import { LogOut, Users } from '@lucide/svelte';
+	import { LogOut, Users, Building2, Store as StoreIcon } from '@lucide/svelte';
 
 	let { children } = $props();
 </script>
@@ -21,6 +21,14 @@
 					<Button variant="ghost" href="/admin" class="gap-2">
 						<Users class="size-4" />
 						{m.admin_contacts()}
+					</Button>
+					<Button variant="ghost" href="/admin/agencies" class="gap-2">
+						<Building2 class="size-4" />
+						{m.admin_agencies()}
+					</Button>
+					<Button variant="ghost" href="/admin/stores" class="gap-2">
+						<StoreIcon class="size-4" />
+						{m.admin_stores()}
 					</Button>
 				</nav>
 			</div>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
+	import { Toaster } from '$lib/components/ui/sonner';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.ico';
 
@@ -9,6 +10,7 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
+<Toaster />
 {@render children()}
 <div style="display:none">
 	{#each locales as locale}

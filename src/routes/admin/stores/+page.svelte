@@ -1,37 +1,35 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { m } from '$lib/paraglide/messages';
-	import * as Card from '$lib/components/ui/card';
-	import * as Table from '$lib/components/ui/table';
-	import { Input } from '$lib/components/ui/input';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { Button } from '$lib/components/ui/button';
-	import * as Empty from '$lib/components/ui/empty';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Select from '$lib/components/ui/select';
+	import * as Empty from '$lib/components/ui/empty';
+	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import * as Table from '$lib/components/ui/table';
+	import { m } from '$lib/paraglide/messages';
+	import type { StoreExpanded } from '$lib/types';
 	import {
-		Search,
-		Users,
 		ChevronLeft,
 		ChevronRight,
-		Plus,
 		MoreHorizontal,
 		Pencil,
+		Plus,
+		Search,
+		Store as StoreIcon,
 		Trash
 	} from '@lucide/svelte';
-	import type { ContactExpanded } from '$lib/types';
+
+	import { toast } from 'svelte-sonner';
 
 	let { data, form } = $props();
 
+	// Sync search input with URL param safely
 	let searchInput = $state('');
-
 	$effect(() => {
 		searchInput = data.search || '';
 	});
@@ -39,13 +37,9 @@
 	// Dialog States
 	let isDialogOpen = $state(false);
 	let isEditMode = $state(false);
-	let selectedContact: ContactExpanded | null = $state(null);
+	let selectedStore: StoreExpanded | null = $state(null);
 	let isDeleteDialogOpen = $state(false);
-	let contactToDelete: ContactExpanded | null = $state(null);
-
-	// Select States for Dialog
-	let selectedAgencyId = $state('');
-	let selectedStoreId = $state('');
+	let storeToDelete: StoreExpanded | null = $state(null);
 
 	// Search Debounce
 	let debounceTimer: ReturnType<typeof setTimeout>;
@@ -67,30 +61,24 @@
 		return new Date(dateStr).toLocaleDateString('es-ES', {
 			day: '2-digit',
 			month: '2-digit',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
+			year: 'numeric'
 		});
 	};
 
 	function openCreateDialog() {
 		isEditMode = false;
-		selectedContact = null;
-		selectedAgencyId = '';
-		selectedStoreId = '';
+		selectedStore = null;
 		isDialogOpen = true;
 	}
 
-	function openEditDialog(contact: ContactExpanded) {
+	function openEditDialog(store: StoreExpanded) {
 		isEditMode = true;
-		selectedContact = contact;
-		selectedAgencyId = contact.agency || '';
-		selectedStoreId = contact.store || '';
+		selectedStore = store;
 		isDialogOpen = true;
 	}
 
-	function openDeleteDialog(contact: ContactExpanded) {
-		contactToDelete = contact;
+	function openDeleteDialog(store: StoreExpanded) {
+		storeToDelete = store;
 		isDeleteDialogOpen = true;
 	}
 
@@ -102,28 +90,23 @@
 			if (form.action === 'create') toast.success(m.admin_success_create());
 			else if (form.action === 'update') toast.success(m.admin_success_update());
 			else if (form.action === 'delete') toast.success(m.admin_success_delete());
-			else if (form.action === 'updateStatus') toast.success(m.admin_success_update());
 			else toast.success(m.admin_success_update());
 		} else if (form?.error) {
 			toast.error(typeof form.error === 'string' ? form.error : m.admin_error());
 		}
 	});
-
-	// Helper component/snippet (not really needed but cleaner)
-
-	// Helper component/snippet (not really needed but cleaner)
 </script>
 
 <div class="space-y-6">
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-2xl font-bold text-[--vivus-blue]">{m.admin_contacts()}</h1>
-			<p class="text-muted-foreground">{data.totalItems} {m.admin_contacts().toLowerCase()}</p>
+			<h1 class="text-2xl font-bold text-[--vivus-blue]">{m.admin_stores()}</h1>
+			<p class="text-muted-foreground">{data.totalItems} {m.admin_stores().toLowerCase()}</p>
 		</div>
 		<Button onclick={openCreateDialog} class="gap-2">
 			<Plus class="size-4" />
-			{m.admin_create_contact()}
+			{m.admin_create_store()}
 		</Button>
 	</div>
 
@@ -133,7 +116,7 @@
 			<div class="relative">
 				<Search class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
-					placeholder={m.admin_search()}
+					placeholder={m.admin_search_stores()}
 					class="pl-10"
 					bind:value={searchInput}
 					oninput={(e) => handleSearch(e.currentTarget.value)}
@@ -142,15 +125,15 @@
 		</Card.Content>
 	</Card.Root>
 
-	<!-- Contacts Table -->
+	<!-- Table -->
 	<Card.Root>
 		<Card.Content class="p-0">
-			{#if data.contacts.length === 0}
+			{#if data.records.length === 0}
 				<Empty.Root class="py-12">
 					<Empty.Icon>
-						<Users class="size-10" />
+						<StoreIcon class="size-10" />
 					</Empty.Icon>
-					<Empty.Title>{m.admin_no_contacts()}</Empty.Title>
+					<Empty.Title>{m.admin_no_stores()}</Empty.Title>
 				</Empty.Root>
 			{:else}
 				<div class="overflow-x-auto">
@@ -160,74 +143,49 @@
 								<Table.Head>{m.admin_name()}</Table.Head>
 								<Table.Head>{m.admin_phone()}</Table.Head>
 								<Table.Head>{m.admin_email()}</Table.Head>
-								<Table.Head>{m.admin_agency()}</Table.Head>
-								<Table.Head>{m.admin_store()}</Table.Head>
-								<Table.Head class="text-center">{m.admin_virtual_check_active()}</Table.Head>
-								<Table.Head class="text-center">{m.admin_email_sent()}</Table.Head>
-								<Table.Head class="text-center">{m.admin_redeemed()}</Table.Head>
+								<Table.Head>{m.admin_website()}</Table.Head>
+								<Table.Head>{m.admin_address()}</Table.Head>
 								<Table.Head>{m.admin_created()}</Table.Head>
 								<Table.Head class="text-right">{m.admin_actions_title()}</Table.Head>
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each data.contacts as contact (contact.id)}
+							{#each data.records as store (store.id)}
 								<Table.Row>
-									<Table.Cell class="font-medium">
-										{contact.name}
-										{contact.last_name}
-									</Table.Cell>
-									<Table.Cell>{contact.phone || '-'}</Table.Cell>
+									<Table.Cell class="font-medium">{store.name}</Table.Cell>
+									<Table.Cell>{store.phone || '-'}</Table.Cell>
 									<Table.Cell>
-										<a href="mailto:{contact.email}" class="text-[--vivus-blue] hover:underline">
-											{contact.email}
-										</a>
-									</Table.Cell>
-									<Table.Cell>
-										{#if contact.expand?.agency}
-											<Badge variant="outline">{contact.expand.agency.name}</Badge>
+										{#if store.email}
+											<a href="mailto:{store.email}" class="text-[--vivus-blue] hover:underline">
+												{store.email}
+											</a>
 										{:else}
-											<span class="text-muted-foreground">-</span>
+											-
 										{/if}
 									</Table.Cell>
 									<Table.Cell>
-										{#if contact.expand?.store}
-											<Badge variant="secondary">{contact.expand.store.name}</Badge>
+										{#if store.website}
+											<a
+												href={store.website}
+												target="_blank"
+												rel="noopener noreferrer"
+												class="text-[--vivus-blue] hover:underline"
+											>
+												{store.website}
+											</a>
 										{:else}
-											<span class="text-muted-foreground">-</span>
+											-
 										{/if}
 									</Table.Cell>
-									<Table.Cell class="text-center">
-										<form method="POST" action="?/updateStatus" use:enhance>
-											<input type="hidden" name="contactId" value={contact.id} />
-											<input type="hidden" name="field" value="virtual_check_active" />
-											<input type="hidden" name="value" value={!contact.virtual_check_active} />
-											<button type="submit" class="cursor-pointer">
-												<Checkbox checked={contact.virtual_check_active} />
-											</button>
-										</form>
-									</Table.Cell>
-									<Table.Cell class="text-center">
-										<form method="POST" action="?/updateStatus" use:enhance>
-											<input type="hidden" name="contactId" value={contact.id} />
-											<input type="hidden" name="field" value="email_sent" />
-											<input type="hidden" name="value" value={!contact.email_sent} />
-											<button type="submit" class="cursor-pointer">
-												<Checkbox checked={contact.email_sent} />
-											</button>
-										</form>
-									</Table.Cell>
-									<Table.Cell class="text-center">
-										<form method="POST" action="?/updateStatus" use:enhance>
-											<input type="hidden" name="contactId" value={contact.id} />
-											<input type="hidden" name="field" value="redeemed" />
-											<input type="hidden" name="value" value={!contact.redeemed} />
-											<button type="submit" class="cursor-pointer">
-												<Checkbox checked={contact.redeemed} />
-											</button>
-										</form>
+									<Table.Cell>
+										{#if store.expand?.address}
+											{store.expand.address.line}, {store.expand.address.city}
+										{:else}
+											-
+										{/if}
 									</Table.Cell>
 									<Table.Cell class="whitespace-nowrap text-muted-foreground">
-										{formatDate(contact.created)}
+										{formatDate(store.created)}
 									</Table.Cell>
 									<Table.Cell class="text-right">
 										<DropdownMenu.Root>
@@ -239,13 +197,13 @@
 												{/snippet}
 											</DropdownMenu.Trigger>
 											<DropdownMenu.Content align="end">
-												<DropdownMenu.Item onclick={() => openEditDialog(contact)}>
+												<DropdownMenu.Item onclick={() => openEditDialog(store)}>
 													<Pencil class="mr-2 size-4" />
 													{m.admin_edit()}
 												</DropdownMenu.Item>
 												<DropdownMenu.Item
 													class="text-red-600"
-													onclick={() => openDeleteDialog(contact)}
+													onclick={() => openDeleteDialog(store)}
 												>
 													<Trash class="mr-2 size-4" />
 													{m.admin_delete()}
@@ -294,39 +252,29 @@
 
 <!-- Create/Edit Dialog -->
 <Dialog.Root bind:open={isDialogOpen}>
-	<Dialog.Content class="sm:max-w-[500px]">
+	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
-			<Dialog.Title>{isEditMode ? m.admin_edit_contact() : m.admin_create_contact()}</Dialog.Title>
+			<Dialog.Title>{isEditMode ? m.admin_edit_store() : m.admin_create_store()}</Dialog.Title>
 		</Dialog.Header>
 		<form action={isEditMode ? '?/update' : '?/create'} method="POST" use:enhance>
 			<div class="grid gap-4 py-4">
 				{#if isEditMode}
-					<input type="hidden" name="id" value={selectedContact?.id} />
-					<input
-						type="hidden"
-						name="address_id"
-						value={selectedContact?.expand?.address?.id || ''}
-					/>
+					<input type="hidden" name="id" value={selectedStore?.id} />
+					<input type="hidden" name="address_id" value={selectedStore?.expand?.address?.id || ''} />
 				{/if}
 				<div class="grid grid-cols-4 items-center gap-4">
-					<Label for="name" class="text-right">{m.admin_first_name()} *</Label>
+					<Label for="name" class="text-right">{m.admin_name()} *</Label>
 					<Input
 						id="name"
 						name="name"
-						value={selectedContact?.name || ''}
+						value={selectedStore?.name || ''}
 						class="col-span-3"
 						required
 					/>
 				</div>
 				<div class="grid grid-cols-4 items-center gap-4">
-					<Label for="last_name" class="text-right">{m.admin_last_name()} *</Label>
-					<Input
-						id="last_name"
-						name="last_name"
-						value={selectedContact?.last_name || ''}
-						class="col-span-3"
-						required
-					/>
+					<Label for="phone" class="text-right">{m.admin_phone()}</Label>
+					<Input id="phone" name="phone" value={selectedStore?.phone || ''} class="col-span-3" />
 				</div>
 				<div class="grid grid-cols-4 items-center gap-4">
 					<Label for="email" class="text-right">{m.admin_email()}</Label>
@@ -334,59 +282,19 @@
 						id="email"
 						name="email"
 						type="email"
-						value={selectedContact?.email || ''}
+						value={selectedStore?.email || ''}
 						class="col-span-3"
 					/>
 				</div>
 				<div class="grid grid-cols-4 items-center gap-4">
-					<Label for="phone" class="text-right">{m.admin_phone()}</Label>
-					<Input id="phone" name="phone" value={selectedContact?.phone || ''} class="col-span-3" />
+					<Label for="website" class="text-right">{m.admin_website()}</Label>
+					<Input
+						id="website"
+						name="website"
+						value={selectedStore?.website || ''}
+						class="col-span-3"
+					/>
 				</div>
-
-				<div class="grid grid-cols-4 items-center gap-4">
-					<Label for="agency" class="text-right">{m.admin_agency()}</Label>
-					<div class="col-span-3">
-						<Select.Root type="single" name="agency" bind:value={selectedAgencyId}>
-							<Select.Trigger>
-								{data.agencies.find((a) => a.id === selectedAgencyId)?.name ||
-									m.admin_select_agency()}
-							</Select.Trigger>
-							<Select.Content>
-								<Select.Item value="" label={m.admin_no_agency()}>{m.admin_no_agency()}</Select.Item
-								>
-								{#each data.agencies as agency}
-									<Select.Item value={agency.id} label={agency.name}>{agency.name}</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-					</div>
-				</div>
-
-				<div class="grid grid-cols-4 items-center gap-4">
-					<Label for="store" class="text-right">{m.admin_store()}</Label>
-					<div class="col-span-3">
-						<Select.Root type="single" name="store" bind:value={selectedStoreId}>
-							<Select.Trigger>
-								{data.stores.find((s) => s.id === selectedStoreId)?.name || m.admin_select_store()}
-							</Select.Trigger>
-							<Select.Content>
-								<Select.Item value="" label={m.admin_no_store()}>{m.admin_no_store()}</Select.Item>
-								{#each data.stores as store}
-									<Select.Item value={store.id} label={store.name}>{store.name}</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-					</div>
-				</div>
-
-				{#if !isEditMode}
-					<div class="grid grid-cols-4 items-center gap-4">
-						<Label for="redeemed" class="text-right">{m.admin_redeemed()}</Label>
-						<div class="col-span-3 flex items-center space-x-2">
-							<Checkbox id="redeemed" name="redeemed" />
-						</div>
-					</div>
-				{/if}
 
 				<!-- Address Fields -->
 				<div class="col-span-4 mt-2 border-t pt-4">
@@ -397,7 +305,7 @@
 							<Input
 								id="address_line"
 								name="address_line"
-								value={selectedContact?.expand?.address?.line || ''}
+								value={selectedStore?.expand?.address?.line || ''}
 								class="col-span-3"
 							/>
 						</div>
@@ -406,7 +314,7 @@
 							<Input
 								id="address_city"
 								name="address_city"
-								value={selectedContact?.expand?.address?.city || ''}
+								value={selectedStore?.expand?.address?.city || ''}
 								class="col-span-3"
 							/>
 						</div>
@@ -415,7 +323,7 @@
 							<Input
 								id="address_zip"
 								name="address_zip"
-								value={selectedContact?.expand?.address?.zip || ''}
+								value={selectedStore?.expand?.address?.zip || ''}
 								class="col-span-3"
 							/>
 						</div>
@@ -424,7 +332,7 @@
 							<Input
 								id="address_country"
 								name="address_country"
-								value={selectedContact?.expand?.address?.country || ''}
+								value={selectedStore?.expand?.address?.country || ''}
 								class="col-span-3"
 							/>
 						</div>
@@ -455,7 +363,7 @@
 				>{m.admin_cancel()}</AlertDialog.Cancel
 			>
 			<form action="?/delete" method="POST" use:enhance>
-				<input type="hidden" name="id" value={contactToDelete?.id} />
+				<input type="hidden" name="id" value={storeToDelete?.id} />
 				<Button variant="destructive" type="submit">{m.admin_delete()}</Button>
 			</form>
 		</AlertDialog.Footer>

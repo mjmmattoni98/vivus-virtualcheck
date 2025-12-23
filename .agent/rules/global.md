@@ -3,9 +3,11 @@ trigger: always_on
 ---
 
 ---
+
 description: ALWAYS follow this rule.
 globs:
 alwaysApply: true
+
 ---
 
 Guidelines for working on this project:

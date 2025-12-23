@@ -68,6 +68,18 @@ export interface ContactExpanded extends Contact {
 	};
 }
 
+export interface AgencyExpanded extends Agency {
+	expand?: {
+		address?: Address;
+	};
+}
+
+export interface StoreExpanded extends Store {
+	expand?: {
+		address?: Address;
+	};
+}
+
 // Form submission type
 export interface ContactFormData {
 	name: string;

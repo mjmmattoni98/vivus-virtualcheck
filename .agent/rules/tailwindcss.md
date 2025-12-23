@@ -4,9 +4,11 @@ globs: *.css,**/*.css,*.svelte,**/*.svelte
 ---
 
 ---
+
 description: When writing code for tailwind css make sure to do the following.
-globs: *.css,**/*.css,*.svelte,**/*.svelte
+globs: _.css,\*\*/_.css,_.svelte,\*\*/_.svelte
 alwaysApply: false
+
 ---
 
 # Tailwind CSS v4
@@ -31,7 +33,7 @@ alwaysApply: false
 - Legacy `tailwind.config.js` files can still be imported using the `@config` directive:
   ```css
   @import 'tailwindcss';
-  @config "../../tailwind.config.js";
+  @config '../../tailwind.config.js';
   ```
 - **CSS import syntax**: Use `@import "tailwindcss"` instead of `@tailwind` directives
   - Old: `@tailwind base; @tailwind components; @tailwind utilities;`
@@ -146,7 +148,7 @@ alwaysApply: false
 
 - **Plugins**: Use `@plugin` directive
   ```css
-  @plugin "@tailwindcss/typography";
+  @plugin '@tailwindcss/typography';
   ```
 
 ## Breaking Changes

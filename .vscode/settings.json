@@ -2,12 +2,5 @@
 	"files.associations": {
 		"*.css": "tailwindcss"
 	},
-	"cSpell.words": [
-		"inlang",
-		"neverthrow",
-		"outdir",
-		"paraglide",
-		"vivus",
-		"Vivus"
-	]
+	"cSpell.words": ["inlang", "neverthrow", "outdir", "paraglide", "vivus", "Vivus"]
 }

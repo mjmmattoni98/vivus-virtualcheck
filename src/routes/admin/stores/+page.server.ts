@@ -1,6 +1,6 @@
-import { redirect, fail } from '@sveltejs/kit';
+import type { StoreExpanded } from '$lib/types';
+import { fail, redirect } from '@sveltejs/kit';
 import { ResultAsync } from 'neverthrow';
-import type { ContactExpanded } from '$lib/types';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
@@ -14,62 +14,33 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 
 	let filter = '';
 	if (search) {
-		filter = `name ~ "${search}" || last_name ~ "${search}" || email ~ "${search}" || phone ~ "${search}"`;
+		filter = `name ~ "${search}" || email ~ "${search}" || phone ~ "${search}"`;
 	}
 
-	const [contacts, agencies, stores] = await Promise.all([
-		pb.collection('contacts').getList<ContactExpanded>(page, perPage, {
-			filter,
-			sort: '-created',
-			expand: 'agency,store,address'
-		}),
-		pb.collection('agencies').getFullList({ sort: 'name' }),
-		pb.collection('stores').getFullList({ sort: 'name' })
-	]);
+	const records = await pb.collection('stores').getList<StoreExpanded>(page, perPage, {
+		filter,
+		sort: '-created',
+		expand: 'address'
+	});
 
 	return {
-		contacts: contacts.items,
-		totalPages: contacts.totalPages,
+		records: records.items,
+		totalPages: records.totalPages,
 		currentPage: page,
-		totalItems: contacts.totalItems,
-		search,
-		agencies,
-		stores
+		totalItems: records.totalItems,
+		search
 	};
 };
 
 export const actions: Actions = {
-	updateStatus: async ({ request, locals }) => {
-		const pb = locals.pb;
-		const formData = await request.formData();
-
-		const contactId = formData.get('contactId') as string;
-		const field = formData.get('field') as string;
-		const value = formData.get('value') === 'true';
-
-		const updateData: Record<string, unknown> = { [field]: value };
-
-		// If redeemed is being set to true, also set redeemed_at
-		if (field === 'redeemed' && value) {
-			updateData.redeemed_at = new Date().toISOString();
-		}
-
-		await pb.collection('contacts').update(contactId, updateData);
-
-		return { success: true, action: 'updateStatus' };
-	},
-
 	create: async ({ request, locals }) => {
 		const pb = locals.pb;
 		const formData = await request.formData();
 
 		const name = formData.get('name') as string;
-		const last_name = formData.get('last_name') as string;
 		const phone = formData.get('phone') as string;
 		const email = formData.get('email') as string;
-		const agency = formData.get('agency') as string;
-		const store = formData.get('store') as string;
-		const redeemed = formData.get('redeemed') === 'on';
+		const website = formData.get('website') as string;
 
 		// Address fields
 		const addressLine = formData.get('address_line') as string;
@@ -77,7 +48,7 @@ export const actions: Actions = {
 		const zip = formData.get('address_zip') as string;
 		const country = formData.get('address_country') as string;
 
-		if (!name || !last_name) {
+		if (!name) {
 			return fail(400, { missing: true });
 		}
 
@@ -98,23 +69,19 @@ export const actions: Actions = {
 		}
 
 		const result = await ResultAsync.fromPromise(
-			pb.collection('contacts').create({
+			pb.collection('stores').create({
 				name,
-				last_name,
 				phone,
 				email,
-				agency: agency || null,
-				store: store || null,
-				address: addressId || null,
-				redeemed,
-				redeemed_at: redeemed ? new Date().toISOString() : null
+				website,
+				address: addressId || null
 			}),
 			(e) => e
 		);
 
 		if (result.isErr()) {
 			console.error(result.error);
-			return fail(400, { error: 'Failed to create contact' });
+			return fail(400, { error: 'Failed to create store' });
 		}
 
 		return { success: true, action: 'create' };
@@ -126,11 +93,9 @@ export const actions: Actions = {
 		const id = formData.get('id') as string;
 
 		const name = formData.get('name') as string;
-		const last_name = formData.get('last_name') as string;
 		const phone = formData.get('phone') as string;
 		const email = formData.get('email') as string;
-		const agency = formData.get('agency') as string;
-		const store = formData.get('store') as string;
+		const website = formData.get('website') as string;
 
 		// Address fields
 		const addressLine = formData.get('address_line') as string;
@@ -141,7 +106,7 @@ export const actions: Actions = {
 		// Current address ID if exists
 		let addressId = formData.get('address_id') as string;
 
-		if (!id || !name || !last_name) {
+		if (!id || !name) {
 			return fail(400, { missing: true });
 		}
 
@@ -174,13 +139,11 @@ export const actions: Actions = {
 		}
 
 		const result = await ResultAsync.fromPromise(
-			pb.collection('contacts').update(id, {
+			pb.collection('stores').update(id, {
 				name,
-				last_name,
 				phone,
 				email,
-				agency: agency || null,
-				store: store || null,
+				website,
 				address: addressId || null
 			}),
 			(e) => e
@@ -188,7 +151,7 @@ export const actions: Actions = {
 
 		if (result.isErr()) {
 			console.error(result.error);
-			return fail(400, { error: 'Failed to update contact' });
+			return fail(400, { error: 'Failed to update store' });
 		}
 
 		return { success: true, action: 'update' };
@@ -203,11 +166,11 @@ export const actions: Actions = {
 			return fail(400, { missing: true });
 		}
 
-		const result = await ResultAsync.fromPromise(pb.collection('contacts').delete(id), (e) => e);
+		const result = await ResultAsync.fromPromise(pb.collection('stores').delete(id), (e) => e);
 
 		if (result.isErr()) {
 			console.error(result.error);
-			return fail(400, { error: 'Failed to delete contact' });
+			return fail(400, { error: 'Failed to delete store' });
 		}
 
 		return { success: true, action: 'delete' };

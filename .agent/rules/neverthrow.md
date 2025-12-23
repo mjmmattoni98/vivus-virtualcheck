@@ -4,9 +4,11 @@ description: When handling errors, use the `neverthrow` library to handle errors
 ---
 
 ---
+
 description: When handling errors, use the `neverthrow` library to handle errors.
-globs: *.ts,**/*.ts
+globs: _.ts,\*\*/_.ts
 alwaysApply: false
+
 ---
 
 neverthrow — Condensed API (Core surface, minimal examples)

@@ -4,9 +4,11 @@ globs: **/*.svelte,**/*.svelte.ts,*.svelte,*.svelte.ts,*.remote.ts,**/*.remote.t
 ---
 
 ---
+
 description: When writing code for svelte (.svelte or .svelte.ts files) make sure to do the following.
-globs: **/*.svelte,**/*.svelte.ts,*.svelte,*.svelte.ts,*.remote.ts,**/*.remote.ts
+globs: **/\*.svelte,**/_.svelte.ts,_.svelte,_.svelte.ts,_.remote.ts,\*_/_.remote.ts
 alwaysApply: false
+
 ---
 
 **Using images with SvelteJS**
