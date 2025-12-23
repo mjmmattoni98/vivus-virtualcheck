@@ -9,33 +9,33 @@ export interface BaseRecord extends RecordModel {
 
 export interface Address extends BaseRecord {
 	line: string;
-	line_2: string;
+	line_2?: string;
 	zip: string;
 	city: string;
-	state: string;
+	state?: string;
 	country: string;
 }
 
 export interface Agency extends BaseRecord {
 	name: string;
-	phone: string;
-	email: string;
-	website: string;
-	address: string; // relation ID
+	phone?: string;
+	email?: string;
+	website?: string;
+	address?: string; // relation ID
 }
 
 export interface Store extends BaseRecord {
 	name: string;
-	phone: string;
-	email: string;
-	website: string;
-	address: string; // relation ID
+	phone?: string;
+	email?: string;
+	website?: string;
+	address?: string; // relation ID
 }
 
 export interface AgencyStore extends BaseRecord {
-	agency: string; // relation ID
-	store: string; // relation ID
-	relation_hash: string;
+	agency?: string; // relation ID
+	store?: string; // relation ID
+	relation_hash?: string;
 }
 
 export interface Contact extends BaseRecord {
@@ -46,9 +46,8 @@ export interface Contact extends BaseRecord {
 	acceptance: boolean;
 	virtual_check_active: boolean;
 	email_sent: boolean;
-	redeemed: boolean;
-	redeemed_at: string;
-	address: string; // relation ID
+	redeemed_at?: Date;
+	address?: string; // relation ID
 	agency: string; // relation ID
 	store: string; // relation ID
 }
